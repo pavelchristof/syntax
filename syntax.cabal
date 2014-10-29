@@ -10,6 +10,10 @@ category:            Data
 build-type:          Simple
 cabal-version:       >=1.10
 
+source-repository head
+  type:     git
+  location: git@github.com:Pawel834/syntax.git
+
 library
   exposed-modules:     Data.Syntax
                        Data.Syntax.Char
