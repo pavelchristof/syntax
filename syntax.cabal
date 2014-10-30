@@ -1,13 +1,15 @@
 name:                syntax
 version:             0.1.1.0
 synopsis:            Abstract syntax descriptions for parsing and pretty-printing.
-description:         Write single syntax description, get both parser and pretty-printer.
+description:         Abstract syntax descriptions for parsing and pretty-printing.
+                     Write a single syntax description, get both a parser and a pretty-printer.
                      .
                      Syntax descriptions are based on semi-isomorphisms from @semi-iso@ library.
                      .
                      The library is very young. There are lots of useful combinators that could be written.
                      .
-                     See @syntax-example@ for an example.
+                     See @syntax-example@ for an example, @syntax-attoparsec@ and @syntax-pretty@ for
+                     a parser/printer implementation.
 license:             MIT
 license-file:        LICENSE
 author:              Paweł Nowak

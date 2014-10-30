@@ -60,14 +60,17 @@ packed = iso otoList fromList
 -- > atom =  _Var /$/ name
 -- >     /|/ parens expr
 -- >
+-- > --| Parses a list of applications.
+-- > apps :: Syntax syn Text => syn AST
+-- > apps = bifoldl1 (attemptAp_ _App) /$/ S.sepBy1 atom S.spaces1
+-- >
 -- > -- | An expression of our lambda calculus.
 -- > expr :: Syntax syn Text => syn AST
--- > expr =  _App /$/ atom /* S.spaces1 /*/ atom
--- >     /|/ _Abs /$/ S.char '\\'   /* S.spaces_
+-- > expr =  _Abs /$/ S.char '\\'   /* S.spaces_
 -- >               */ name          /* S.spaces
 -- >              /*  S.string "->" /* S.spaces
--- >              /*/ expr 
--- >     /|/ atom
+-- >              /*/ expr
+-- >     /|/ apps
 --
 -- Methods of this class try to mimic "Data.Attoparsec.Text" interface.
 class ( SemiIsoAlternative syn
