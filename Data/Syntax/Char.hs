@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {- |
 Module      :  Data.Syntax.Char
 Description :  Char specific combinators.
@@ -14,7 +14,7 @@ Common combinators that work with sequences of chars.
 There are A LOT of combinators missing.
 -}
 module Data.Syntax.Char (
-    SyntaxChar,
+    SyntaxChar(..),
     spaces,
     spaces_,
     spaces1,
@@ -26,12 +26,23 @@ import           Control.Lens.SemiIso
 import           Data.Char
 import           Data.MonoTraversable
 import           Data.Monoid
+import           Data.Scientific (Scientific)
 import           Data.SemiIsoFunctor
 import           Data.Syntax (Syntax)
 import qualified Data.Syntax as S
 
 -- | Syntax constrainted to sequences of chars.
-type SyntaxChar syn seq = (Syntax syn seq, Element seq ~ Char)
+--
+-- Note: methods of this class do not have default implementations (for now), 
+-- because their code is quite ugly and already written in most parser libraries.
+class (Syntax syn seq, Element seq ~ Char) => SyntaxChar syn seq where
+    -- | An unsigned decimal number.
+    decimal :: Integral a => syn a
+
+    -- | A scientific number.
+    scientific :: syn Scientific
+
+    {-# MINIMAL decimal, scientific #-}
 
 -- | Accepts zero or more spaces. Generates a single space.
 spaces :: SyntaxChar syn seq => syn ()

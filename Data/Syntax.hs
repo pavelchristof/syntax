@@ -79,7 +79,7 @@ class ( SemiIsoAlternative syn
       , Eq (Element seq)) 
       => Syntax syn seq | syn -> seq 
     where
-    
+
     -- | Any character.
     anyChar :: syn (Element seq)
 
