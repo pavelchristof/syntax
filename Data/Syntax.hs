@@ -74,6 +74,7 @@ packed = iso otoList fromList
 --
 -- Methods of this class try to mimic "Data.Attoparsec.Text" interface.
 class ( SemiIsoAlternative syn
+      , SemiIsoMonad syn
       , IsSequence seq
       , Eq seq
       , Eq (Element seq)) 

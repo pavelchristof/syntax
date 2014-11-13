@@ -11,10 +11,10 @@ Stability   :  experimental
 
 Common combinators that work with sequences of chars.
 
-There are A LOT of combinators missing.
 -}
 module Data.Syntax.Char (
     SyntaxChar(..),
+    signed,
     spaces,
     spaces_,
     spaces1,
@@ -43,6 +43,12 @@ class (Syntax syn seq, Element seq ~ Char) => SyntaxChar syn seq where
     scientific :: syn Scientific
 
     {-# MINIMAL decimal, scientific #-}
+
+-- | A number with an optional leading '+' or '-' sign character.
+signed :: (Num a, SyntaxChar syn seq) => syn a -> syn a
+signed n =  _Negative /$/ S.char '-' */ n
+        /|/ S.char '+' */ n
+        /|/ n
 
 -- | Accepts zero or more spaces. Generates a single space.
 spaces :: SyntaxChar syn seq => syn ()
