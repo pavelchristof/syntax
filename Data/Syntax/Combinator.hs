@@ -23,3 +23,11 @@ sepBy v s =  sepBy1 v s
 -- | One or more occurences of v separated by s.
 sepBy1 :: SemiIsoAlternative f => f a -> f () -> f [a]
 sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /|/ sipure _Empty)
+
+-- |
+couldBe :: SemiIsoFunctor f => f () -> f ()
+couldBe f = undefined
+
+-- | Something that should be, but doesn't have to be.
+shouldBe :: SemiIsoAlternative f => f () -> f ()
+shouldBe f = constant () /$/ f
