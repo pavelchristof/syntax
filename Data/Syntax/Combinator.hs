@@ -11,23 +11,28 @@ Combinators that work with any sequence type.
 -}
 module Data.Syntax.Combinator where
 
-import Control.Lens.Cons
-import Control.Lens.Empty
+import Control.Lens
+import Control.Lens.SemiIso
 import Data.SemiIsoFunctor
 
--- | Zero or more occurences of v separated by s.
+-- | Zero or more occurences of @v@ separated by @s@.
 sepBy :: SemiIsoAlternative f => f a -> f () -> f [a]
 sepBy v s =  sepBy1 v s 
          /|/ sipure _Empty
 
--- | One or more occurences of v separated by s.
+-- | One or more occurences of @v@ separated by @s@.
 sepBy1 :: SemiIsoAlternative f => f a -> f () -> f [a]
 sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /|/ sipure _Empty)
 
--- |
-couldBe :: SemiIsoFunctor f => f () -> f ()
-couldBe f = undefined
+-- | One or none occurences of @f@.
+optional :: SemiIsoAlternative f => f a -> f (Maybe a)
+optional f = _Just /$/ f /|/ sipure _Nothing
 
--- | Something that should be, but doesn't have to be.
-shouldBe :: SemiIsoAlternative f => f () -> f ()
-shouldBe f = constant () /$/ f
+-- | Like 'optional', but specialized for @()@.
+opt :: SemiIsoAlternative f => f () -> f ()
+opt f = f /|/ sipure id
+
+-- | Parser one or more occurences of @f@, but prints nothing.
+opt_ :: SemiIsoAlternative f => f () -> f ()
+opt_ f =  semiIso (const (Left "opt_")) Right /$/ f
+      /|/ sipure id
