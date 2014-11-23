@@ -22,7 +22,7 @@ module Data.Syntax (
 
 import Prelude hiding (take, takeWhile)
 
-import Control.Lens
+import Control.Lens.Iso
 import Control.Lens.SemiIso
 import Data.MonoTraversable
 import Data.SemiIsoFunctor
@@ -58,16 +58,16 @@ class ( SemiIsoAlternative syn
 
     -- | Any character except the given one.
     notChar :: Element seq -> syn (Element seq)
-    notChar c = filtered (/= c) /$/ anyChar
+    notChar c = bifiltered (/= c) /$/ anyChar
 
     -- | Any character satisfying a predicate.
     satisfy :: (Element seq -> Bool) -> syn (Element seq)
-    satisfy p = filtered p /$/ anyChar
+    satisfy p = bifiltered p /$/ anyChar
 
     -- | Transforms a character using a SemiIso and filters out values
     -- not satisfying the predicate.
     satisfyWith :: ASemiIso' a (Element seq) -> (a -> Bool) -> syn a
-    satisfyWith ai p = filtered p . ai /$/ anyChar
+    satisfyWith ai p = bifiltered p . ai /$/ anyChar
 
     -- | A specific string.
     string :: seq -> syn ()
