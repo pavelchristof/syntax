@@ -24,7 +24,7 @@ sepBy v s =  sepBy1 v s
 sepBy1 :: SemiIsoAlternative f => f a -> f () -> f [a]
 sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /|/ sipure _Empty)
 
--- | One or none occurences of @f@.
+-- | One or zero occurences of @f@.
 optional :: SemiIsoAlternative f => f a -> f (Maybe a)
 optional f = _Just /$/ f /|/ sipure _Nothing
 
@@ -32,7 +32,7 @@ optional f = _Just /$/ f /|/ sipure _Nothing
 opt :: SemiIsoAlternative f => f () -> f ()
 opt f = f /|/ sipure id
 
--- | Parser one or more occurences of @f@, but prints nothing.
+-- | Parser one or zero occurences of @f@, but prints nothing.
 opt_ :: SemiIsoAlternative f => f () -> f ()
 opt_ f =  semiIso (const (Left "opt_")) Right /$/ f
       /|/ sipure id
