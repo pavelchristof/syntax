@@ -62,10 +62,6 @@ spaces_ = constant mempty /$/ S.takeWhile isSpace
 spaces1 :: SyntaxChar syn seq => syn ()
 spaces1 = constant (opoint ' ') /$/ S.takeWhile1 isSpace
 
--- | Accepts one or more spaces. Generates no output.
-spaces1_ :: SyntaxChar syn seq => syn ()
-spaces1_ = constant mempty /$/ S.takeWhile1 isSpace
-
 -- | Accepts a single newline. Generates a newline.
 endOfLine :: SyntaxChar syn seq => syn ()
 endOfLine = S.char '\n'
