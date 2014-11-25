@@ -54,7 +54,7 @@ class ( SemiIsoAlternative syn
 
     -- | A specific character.
     char :: Element seq -> syn ()
-    char c = exact c /$/ anyChar
+    char c = rev (exact c) /$/ anyChar
 
     -- | Any character except the given one.
     notChar :: Element seq -> syn (Element seq)
@@ -71,7 +71,7 @@ class ( SemiIsoAlternative syn
 
     -- | A specific string.
     string :: seq -> syn ()
-    string s = exact s /$/ take (olength s)
+    string s = rev (exact s) /$/ take (olength s)
 
     -- | A string of length @n@.
     take :: Int -> syn seq

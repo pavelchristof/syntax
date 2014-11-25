@@ -1,4 +1,5 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {- |
 Module      :  Data.Syntax.Char
@@ -14,6 +15,7 @@ Common combinators that work with sequences of chars.
 -}
 module Data.Syntax.Char (
     SyntaxChar(..),
+    SyntaxText,
     signed,
     spaces,
     spaces_,
@@ -28,6 +30,7 @@ import Data.Scientific (Scientific)
 import Data.SemiIsoFunctor
 import Data.Syntax
 import Data.Syntax.Combinator
+import Data.Text (Text)
 
 -- | Syntax constrainted to sequences of chars.
 --
@@ -41,6 +44,9 @@ class (Syntax syn seq, Element seq ~ Char) => SyntaxChar syn seq where
     scientific :: syn Scientific
 
     {-# MINIMAL decimal, scientific #-}
+
+-- | An useful synonym for SyntaxChars with Text sequences.
+type SyntaxText syn = SyntaxChar syn Text
 
 -- | A number with an optional leading '+' or '-' sign character.
 signed :: (Real a, SyntaxChar syn seq) => syn a -> syn a
