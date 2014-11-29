@@ -10,7 +10,7 @@ description:
   .
   Once you write a description you can, for example turn it into an Attoparsec parser.
   .
-  See @syntax-example@ for an example, 'syntax-attoparsec' and 'syntax-pretty' for a parser/printer implementation.
+  See @syntax-example@ and @syntax-example-json@ for examples, 'syntax-attoparsec' and 'syntax-pretty' for a parser/printer implementation.
   .
   The library was inspired by:
   .
@@ -18,13 +18,17 @@ description:
   .
   TODO:
   .
-  * a printer library based on Text/ByteString builders (wrapping 'pretty' is inefficient and doesn't use any features of it),
+  * A printer library based on Text/ByteString builders (wrapping 'pretty' is inefficient and doesn't use any features of it).
   .
-  * try to implement indentation and Haskell layout rule,
+  * Research relative monads and relative monad transformers. Indent is basically a Reader monad  over a syntax. How would a State monad look?
   .
-  * combinators for binary data formats, vectors,
+  * Try to implement Haskell layout rule.
   .
-  * implementation of do notation for SemiIsoMonad with QuasiQuoters.
+  * Combinators for binary data formats, vectors.
+  .
+  * Better error messages.
+  .
+  * Maybe an implementation of do notation for SemiIsoMonad with QuasiQuoters.
 
 license:             MIT
 license-file:        LICENSE
