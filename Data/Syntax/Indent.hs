@@ -12,7 +12,7 @@ import Data.Syntax.Char
 import Data.Syntax.Combinator
 import Prelude hiding (takeWhile, take)
 
-newtype Indent m a = Indent { unIndent :: Int -> m a }
+newtype Indent m a = Indent { unIndent :: (Int, m ()) -> m a }
 
 instance SemiIsoFunctor m => SemiIsoFunctor (Indent m) where
     simap f (Indent g) = Indent $ \i -> simap f (g i)
@@ -49,11 +49,10 @@ instance SyntaxChar syn seq => SyntaxChar (Indent syn) seq where
     scientific = Indent $ const scientific
 
 breakLine :: SyntaxChar syn seq => Indent syn ()
-breakLine = Indent $ \i -> opt (char '\n') /* 
-                           (constant (fromList $ replicate (4*i) ' ') /$/ takeWhile isSpace)
+breakLine = Indent $ \(i, tab) -> opt (char '\n') /* opt (sireplicate_ i tab) /* spaces_
 
 indented :: Indent m a -> Indent m a
-indented (Indent f) = Indent $ \i -> f (i + 1)
+indented (Indent f) = Indent $ \(i, tab) -> f (i + 1, tab)
 
-runIndent :: Indent m a -> m a
-runIndent = ($ 0) . unIndent
+runIndent :: Indent m a -> m () -> m a
+runIndent = ($ 0) . curry . unIndent
