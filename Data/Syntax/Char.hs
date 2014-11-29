@@ -20,7 +20,10 @@ module Data.Syntax.Char (
     spaces,
     spaces_,
     spaces1,
-    endOfLine
+    endOfLine,
+    digitDec,
+    digitOct,
+    digitHex
     ) where
 
 import Control.Lens.SemiIso
@@ -68,3 +71,27 @@ spaces1 = constant (opoint ' ') /$/ takeWhile1 isSpace
 -- | Accepts a single newline. Generates a newline.
 endOfLine :: SyntaxChar syn seq => syn ()
 endOfLine = char '\n'
+
+-- | A decimal digit.
+digitDec :: SyntaxChar syn seq => syn Int
+digitDec = semiIso toChar toInt /$/ anyChar
+  where toInt c | isDigit c = Right (digitToInt c)
+                | otherwise = Left ("Expected a decimal digit, got " ++ [c])
+        toChar i | i >= 0 && i <= 9 = Right (intToDigit i)
+                 | otherwise        = Left ("Expected a decimal digit, got number " ++ show i)
+
+-- | An octal digit.
+digitOct :: SyntaxChar syn seq => syn Int
+digitOct = semiIso toChar toInt /$/ anyChar
+  where toInt c | isOctDigit c = Right (digitToInt c)
+                | otherwise    = Left ("Expected an octal digit, got " ++ [c])
+        toChar i | i >= 0 && i <= 7 = Right (intToDigit i)
+                 | otherwise        = Left ("Expected an octal digit, got number " ++ show i)
+
+-- | A hex digit.
+digitHex :: SyntaxChar syn seq => syn Int
+digitHex = semiIso toChar toInt /$/ anyChar
+  where toInt c | isHexDigit c = Right (digitToInt c)
+                | otherwise    = Left ("Expected a hex digit, got " ++ [c])
+        toChar i | i >= 0 && i <= 15 = Right (intToDigit i)
+                 | otherwise         = Left ("Expected a hex digit, got number " ++ show i)
