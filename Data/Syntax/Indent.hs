@@ -1,17 +1,31 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Data.Syntax.Indent where
+{- |
+Module      :  Data.Syntax.Indent
+Description :  Indentation.
+Copyright   :  (c) Paweł Nowak
+License     :  MIT
 
-import Control.Lens.SemiIso
-import Data.Char (isSpace)
+Maintainer  :  Paweł Nowak <pawel834@gmail.com>
+Stability   :  experimental
+
+Provides a very simple indentation as a \"monad\" transformer.
+-}
+module Data.Syntax.Indent (
+    Indent,
+    runIndent,
+    breakLine,
+    indented
+    ) where
+
 import Data.SemiIsoFunctor
-import Data.Sequences (fromList)
 import Data.Syntax
 import Data.Syntax.Char
 import Data.Syntax.Combinator
 import Prelude hiding (takeWhile, take)
 
+-- | Adds indentation to a syntax description.
 newtype Indent m a = Indent { unIndent :: (Int, m ()) -> m a }
 
 instance SemiIsoFunctor m => SemiIsoFunctor (Indent m) where
@@ -48,11 +62,16 @@ instance SyntaxChar syn seq => SyntaxChar (Indent syn) seq where
     decimal = Indent $ const decimal
     scientific = Indent $ const scientific
 
+-- | @runIndent m tab@ runs the 'Indent' transformer using @tab@ once for each
+-- level of indentation.
+runIndent :: Indent m a -> m () -> m a
+runIndent = ($ 0) . curry . unIndent
+
+-- | Inserts a new line and correct indentation, but does not 
+-- require any formatting when parsing (it just skips all white space).
 breakLine :: SyntaxChar syn seq => Indent syn ()
 breakLine = Indent $ \(i, tab) -> opt (char '\n') /* opt (sireplicate_ i tab) /* spaces_
 
+-- | Increases the indentation level of its argument by one.
 indented :: Indent m a -> Indent m a
 indented (Indent f) = Indent $ \(i, tab) -> f (i + 1, tab)
-
-runIndent :: Indent m a -> m () -> m a
-runIndent = ($ 0) . curry . unIndent
