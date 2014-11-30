@@ -8,9 +8,9 @@ description:
   a semi-isomorphism instead of function. A semi-isomorphism is a isomorphism that can fail in both directions, with slightly
   weakened laws. It is worth to note that @Iso@s and @Prism@s from 'lens' are valid semi-isomorphisms :)
   .
-  Once you write a description you can, for example turn it into an Attoparsec parser.
+  Once you write a description you can, for example turn it into an Attoparsec parser, or into a 'Data.Syntax.Printer.Text.Printer'.
   .
-  See @syntax-example@ and @syntax-example-json@ for examples, 'syntax-attoparsec' and 'syntax-pretty' for a parser/printer implementation.
+  See @syntax-example@ and @syntax-example-json@ for examples, @syntax-attoparsec@ and @syntax-printer@ for a parser/printer implementation.
   .
   The library was inspired by:
   .
@@ -18,9 +18,7 @@ description:
   .
   TODO:
   .
-  * A printer library based on Text/ByteString builders (wrapping 'pretty' is inefficient and doesn't use any features of it).
-  .
-  * Research relative monads and relative monad transformers. Indent is basically a Reader monad  over a syntax. How would a State monad look?
+  * Research relative monads and relative monad transformers. Indent is basically a Reader monad over a syntax. How would a State monad look?
   .
   * Try to implement Haskell layout rule.
   .
@@ -28,7 +26,7 @@ description:
   .
   * Better error messages.
   .
-  * Maybe an implementation of do notation for SemiIsoMonad with QuasiQuoters.
+  * Maybe an implementation of do notation for SemiIsoMonad with QuasiQuoters, like the codo notation for comonads.
 
 license:             MIT
 license-file:        LICENSE
