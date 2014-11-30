@@ -27,6 +27,7 @@ module Data.Syntax.Char (
     ) where
 
 import Control.Lens.SemiIso
+import Data.Bits
 import Data.Char
 import Data.MonoTraversable
 import Data.Scientific (Scientific)
@@ -43,10 +44,16 @@ class (Syntax syn seq, Element seq ~ Char) => SyntaxChar syn seq where
     -- | An unsigned decimal number.
     decimal :: Integral a => syn a
 
+    -- | An unsigned hexadecimal number.
+    hexadecimal :: (Integral a, Bits a) => syn a
+
+    -- | A signed real number.
+    realFloat :: RealFloat a => syn a
+
     -- | A scientific number.
     scientific :: syn Scientific
 
-    {-# MINIMAL decimal, scientific #-}
+    {-# MINIMAL decimal, hexadecimal, realFloat, scientific #-}
 
 -- | An useful synonym for SyntaxChars with Text sequences.
 type SyntaxText syn = SyntaxChar syn Text
