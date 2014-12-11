@@ -1,33 +1,35 @@
 name:                syntax
 version:             1.0.0.0
-synopsis:            Syntax descriptions for unified parsing and pretty-printing.
+synopsis:            Reversible parsing and pretty-printing.
 description:
-  'syntax' allows you to write a single syntax description and instantiate is both as a parser and a pretty printer.
+  "syntax" allows you to write a single syntax description and instantiate is both as a parser and a pretty printer.
   .
-  The interface is based on a custom Functor\/Applicative\/Monad hierarchy, provided by the 'semi-iso' package. You fmap using
-  a semi-isomorphism instead of function. A semi-isomorphism is a isomorphism that can fail in both directions, with slightly
-  weakened laws. It is worth to note that @Iso@s and @Prism@s from 'lens' are valid semi-isomorphisms :)
+  Syntax descriptions are written in applicative or arrow style. The library uses a custom hierarchy, provided by the
+  "semi-iso" package. Most of the time you will be using operators like '/$/' and '/*/', just like parser combinators.
+  When more power is needed - e.g. when the syntax depends on the parsed or printed value - you turn to arrows.
   .
-  Once you write a description you can, for example turn it into an Attoparsec parser, or into a 'Data.Syntax.Printer.Text.Printer'.
+  Semi-isomorphisms from "semi-iso" are the basic building block of syntax descriptions. I recommend reading
+  the hackage page of "semi-iso" first, as it contains much more information.
   .
-  See @syntax-example@ and @syntax-example-json@ for examples, @syntax-attoparsec@ and @syntax-printer@ for a parser/printer implementation.
+  Once you write a syntax description (polymorphic in the syntax category) you can instantiate it both as a parser or as
+  a pretty-printer. The library "syntax-attoparsec" gives you the ability to extract an Attoparsec parser. Pretty-printing
+  is implemented by the "syntax-printer" library, which uses Text and ByteString builders. (Note that formatting is handled
+  by "syntax" itself, not by the printer library)
   .
-  The library was inspired by:
+  Advanced formatting and parsing (for example indentation, haskell layout rule) is implemented as category transformers
+  (similar to monad transformers). Currently only simple indentation is implemented (in "Data.Syntax.Indent") - basically
+  a reader category transformer that tracks current indentation level. I plan on implementing Haskell layout rule in the
+  future (as a reusable transformer).
   .
-  * Rendel, Tillmann, and Klaus Ostermann. "Invertible syntax descriptions: unifying parsing and pretty printing." ACM Sigplan Notices. Vol. 45. No. 11. ACM, 2010.
+  Note that the library can work with both text and binary data. There are no binary combinators implemented - yet.
+  Alas, these are not only useful combinators missing! I will slowly but steadily implement them over time
+  (but these category transformers look so much more interesting for now ;).
   .
-  TODO:
+  EXAMPLES! See @syntax-example@ and @syntax-example-json@ for examples.
   .
-  * Research relative monads and relative monad transformers. Indent is basically a Reader monad over a syntax. How would a State monad look?
+  * "syntax-example" implements a simple lambda calculus.
   .
-  * Try to implement Haskell layout rule.
-  .
-  * Combinators for binary data formats, vectors.
-  .
-  * Better error messages.
-  .
-  * Maybe an implementation of do notation for SemiIsoMonad with QuasiQuoters, like the codo notation for comonads.
-
+  * "syntax-example-json" implements a json parser and pretty printer.
 license:             MIT
 license-file:        LICENSE
 author:              Paweł Nowak
@@ -46,5 +48,5 @@ library
                        Data.Syntax.Char
                        Data.Syntax.Combinator
                        Data.Syntax.Indent
-  build-depends:       base >= 4 && < 5, mono-traversable, lens >= 4, semi-iso >= 1.0.0.0, scientific >= 0.3, text
+  build-depends:       base >= 4 && < 5, mono-traversable, lens >= 4, semi-iso >= 1, scientific >= 0.3, text, vector
   default-language:    Haskell2010
