@@ -22,6 +22,7 @@ module Data.Syntax (
 import Prelude hiding (take, takeWhile)
 
 import Control.Category.Reader
+import Control.Category.Structures
 import Control.Lens.Iso
 import Control.Lens.SemiIso
 import Control.SIArrow
@@ -34,11 +35,11 @@ packed = iso otoList fromList
 
 -- | An abstract syntax description based on semi-isomorphisms.
 --
--- This class can be implemented by both parsers and printers (and maybe more?).
+-- This class can be implemented by both parsers and printers.
 -- 
 -- The usual use is to write a polymorphic syntax description and instantiate it
--- both as a parser and a printer. An example is available in the 'syntax-example'
--- package.
+-- both as a parser and a printer. Examples are available in 'syntax-example' and
+-- 'syntax-example-json' packages.
 --
 -- Methods of this class try to mimic "Data.Attoparsec.Text" interface.
 class ( SIArrow syn

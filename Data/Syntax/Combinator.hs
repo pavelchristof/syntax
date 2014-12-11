@@ -11,6 +11,7 @@ Combinators that work with any sequence type.
 -}
 module Data.Syntax.Combinator where
 
+import Control.Category.Structures
 import Control.Lens
 import Control.Lens.SemiIso
 import Control.SIArrow

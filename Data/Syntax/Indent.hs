@@ -21,6 +21,7 @@ module Data.Syntax.Indent (
 
 import Control.Category
 import Control.Category.Reader
+import Control.Category.Structures
 import Control.SIArrow
 import Data.Syntax
 import Data.Syntax.Char
@@ -28,10 +29,10 @@ import Data.Syntax.Combinator
 import Prelude hiding (takeWhile, take, id, (.))
 
 -- | Adds indentation to a syntax description.
-newtype Indent cat a b = Indent { unIndent :: ReaderCT (Int, cat () ()) cat a b }
-    deriving (Category, Products, Coproducts, CategoryPlus, SIArrow)
+newtype Indent cat a b = Indent { getIndent :: ReaderCT (Int, cat () ()) cat a b }
+    deriving (Category, Products, Coproducts, CatPlus, SIArrow)
 
-instance CategoryTrans Indent where
+instance CatTrans Indent where
     clift = Indent . clift
 
 -- Generalized newtype deriving cannot derive this :(

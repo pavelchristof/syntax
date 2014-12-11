@@ -26,6 +26,7 @@ module Data.Syntax.Char (
     ) where
 
 import Control.Category.Reader
+import Control.Category.Structures
 import Control.Lens.SemiIso
 import Control.SIArrow
 import Data.Bits
