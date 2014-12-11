@@ -10,11 +10,12 @@ License     :  MIT
 Maintainer  :  Paweł Nowak <pawel834@gmail.com>
 Stability   :  experimental
 
-Abstract syntax descriptions based on semi-isomorphisms.
+Reversible parsing and pretty-printing.
 -}
 module Data.Syntax (
     -- * Syntax.
     Syntax(..),
+    Isolable(..),
     -- * Common isomorphisms.
     packed
     ) where
@@ -110,3 +111,19 @@ instance Syntax syn => Syntax (ReaderCT env syn) where
     takeWhile1 = clift . takeWhile1
     takeTill = clift . takeTill
     takeTill1 = clift . takeTill1
+
+-- | Execute a computation in an isolated context.
+--
+-- The motivating example: you want to write a function
+--
+-- > serializeList :: Syntax syn => syn () a -> syn () [a]
+--
+-- Notice that we cannot just use simany, because the first @syn () a@
+-- could eat the entire sequence (even though we printed more than 1 value!), so
+-- we have to insert some kind of separators between the element. But how can we
+-- be sure that @syn () a@ will not eat our separators? We can't! Thats why we
+-- have to do the parsing in two stages: first extract the sequence between separators,
+-- then run the @syn () a@ on this sequence.
+class Syntax syn => Isolable syn where
+    -- | Turns a computation into one executed in an isolated context.
+    isolate :: syn () b -> syn (Seq syn) b
