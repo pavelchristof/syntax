@@ -13,40 +13,40 @@ module Data.Syntax.Combinator where
 
 import Control.Lens
 import Control.Lens.SemiIso
-import Data.SemiIsoFunctor
+import Control.SIArrow
 
 -- | One or zero occurences of @f@.
-optional :: SemiIsoAlternative f => f a -> f (Maybe a)
-optional f = _Just /$/ f /|/ sipure _Nothing
+optional :: SIArrow cat => cat () a -> cat () (Maybe a)
+optional f = _Just /$/ f /+/ sipure _Nothing
 
 -- | Like 'optional', but specialized for @()@.
-opt :: SemiIsoAlternative f => f () -> f ()
-opt f = f /|/ sipure id
+opt :: SIArrow cat => cat () () -> cat () ()
+opt f = f /+/ sipure id
 
 -- | Parser one or zero occurences of @f@, but prints nothing.
-opt_ :: SemiIsoAlternative f => f () -> f ()
+opt_ :: SIArrow cat => cat () () -> cat () ()
 opt_ f =  semiIso (const (Left "opt_")) Right /$/ f
-      /|/ sipure id
+      /+/ sipure id
 
 -- | @manyTill p end@ applies action p zero or more times until action
 -- end succeeds, and returns the list of values returned by p.
-manyTill :: SemiIsoAlternative f => f a -> f () -> f [a]
+manyTill :: SIArrow cat => cat () a -> cat () () -> cat () [a]
 manyTill p end =  _Empty /$/ end
-              /|/ _Cons /$/ p /*/ manyTill p end
+              /+/ _Cons /$/ p /*/ manyTill p end
 
 -- | Zero or more occurences of @v@ separated by @s@.
-sepBy :: SemiIsoAlternative f => f a -> f () -> f [a]
-sepBy v s = sepBy1 v s /|/ sipure _Empty
+sepBy :: SIArrow cat => cat () a -> cat () () -> cat () [a]
+sepBy v s = sepBy1 v s /+/ sipure _Empty
 
 -- | One or more occurences of @v@ separated by @s@.
-sepBy1 :: SemiIsoAlternative f => f a -> f () -> f [a]
-sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /|/ sipure _Empty)
+sepBy1 :: SIArrow cat => cat () a -> cat () () -> cat () [a]
+sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /+/ sipure _Empty)
 
 -- | Tries to apply the actions in the list in order, until one of
 -- them succeeds. Returns the value of the succeeding action.
-choice :: SemiIsoAlternative f => [f a] -> f a
-choice = foldr (/|/) (sifail "choice: all alternatives failed")
+choice :: SIArrow cat => [cat () a] -> cat () a
+choice = foldr (/+/) (sifail "choice: all alternatives failed")
 
 -- | Combine two alternatives.
-eitherOf :: SemiIsoAlternative f => f a -> f b -> f (Either a b)
-eitherOf a b = _Left /$/ a /|/ _Right /$/ b
+eitherOf :: SIArrow cat => cat () a -> cat () b -> cat () (Either a b)
+eitherOf a b = _Left /$/ a /+/ _Right /$/ b

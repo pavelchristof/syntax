@@ -1,7 +1,6 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FunctionalDependencies #-}
 {- |
 Module      :  Data.Syntax
 Description :  Abstract syntax description.
@@ -24,8 +23,8 @@ import Prelude hiding (take, takeWhile)
 
 import Control.Lens.Iso
 import Control.Lens.SemiIso
+import Control.SIArrow
 import Data.MonoTraversable
-import Data.SemiIsoFunctor
 import Data.Sequences hiding (take, takeWhile)
 
 -- | An isomorphism between a sequence and a list of its elements.
@@ -41,56 +40,57 @@ packed = iso otoList fromList
 -- package.
 --
 -- Methods of this class try to mimic "Data.Attoparsec.Text" interface.
-class ( SemiIsoAlternative syn
-      , SemiIsoMonad syn
-      , IsSequence seq
-      , Eq seq
-      , Eq (Element seq)) 
-      => Syntax syn seq | syn -> seq 
+class ( SIArrow syn
+      , IsSequence (Seq syn)
+      , Eq (Seq syn)
+      , Eq (Element (Seq syn)))
+      => Syntax syn
     where
+    -- | The sequence type used by this syntax.
+    type Seq syn :: *
 
     -- | Any character.
-    anyChar :: syn (Element seq)
+    anyChar :: syn () (Element (Seq syn))
 
     -- | A specific character.
-    char :: Element seq -> syn ()
+    char :: Element (Seq syn) -> syn () ()
     char c = rev (exact c) /$/ anyChar
 
     -- | Any character except the given one.
-    notChar :: Element seq -> syn (Element seq)
+    notChar :: Element (Seq syn) -> syn () (Element (Seq syn))
     notChar c = bifiltered (/= c) /$/ anyChar
 
     -- | Any character satisfying a predicate.
-    satisfy :: (Element seq -> Bool) -> syn (Element seq)
+    satisfy :: (Element (Seq syn) -> Bool) -> syn () (Element (Seq syn))
     satisfy p = bifiltered p /$/ anyChar
 
     -- | Transforms a character using a SemiIso and filters out values
     -- not satisfying the predicate.
-    satisfyWith :: ASemiIso' a (Element seq) -> (a -> Bool) -> syn a
+    satisfyWith :: ASemiIso' a (Element (Seq syn)) -> (a -> Bool) -> syn () a
     satisfyWith ai p = bifiltered p . ai /$/ anyChar
 
     -- | A specific string.
-    string :: seq -> syn ()
+    string :: (Seq syn) -> syn () ()
     string s = rev (exact s) /$/ take (olength s)
 
     -- | A string of length @n@.
-    take :: Int -> syn seq
+    take :: Int -> syn () (Seq syn)
     take n = packed /$/ sireplicate n anyChar
 
     -- | Maximal string which elements satisfy a predicate.
-    takeWhile :: (Element seq -> Bool) -> syn seq
+    takeWhile :: (Element (Seq syn) -> Bool) -> syn () (Seq syn)
     takeWhile p = packed /$/ simany (satisfy p)
 
     -- | Maximal non-empty string which elements satisfy a predicate.
-    takeWhile1 :: (Element seq -> Bool) -> syn seq
+    takeWhile1 :: (Element (Seq syn) -> Bool) -> syn () (Seq syn)
     takeWhile1 p = packed /$/ sisome (satisfy p)
 
     -- | Maximal string which elements do not satisfy a predicate.
-    takeTill :: (Element seq -> Bool) -> syn seq
+    takeTill :: (Element (Seq syn) -> Bool) -> syn () (Seq syn)
     takeTill p = takeWhile (not . p)
 
     -- | Maximal non-empty string which elements do not satisfy a predicate.
-    takeTill1 :: (Element seq -> Bool) -> syn seq
+    takeTill1 :: (Element (Seq syn) -> Bool) -> syn () (Seq syn)
     takeTill1 p = takeWhile1 (not . p)
 
     {-# MINIMAL anyChar #-}

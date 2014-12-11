@@ -1,16 +1,16 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 {- |
 Module      :  Data.Syntax.Indent
-Description :  Indentation.
+Description :  Simple indentation.
 Copyright   :  (c) Paweł Nowak
 License     :  MIT
 
 Maintainer  :  Paweł Nowak <pawel834@gmail.com>
 Stability   :  experimental
 
-Provides a very simple indentation as a \"monad\" transformer.
+Provides a very simple indentation as a category transformer (a functor from Cat to Cat).
 -}
 module Data.Syntax.Indent (
     Indent,
@@ -19,59 +19,52 @@ module Data.Syntax.Indent (
     indented
     ) where
 
-import Data.SemiIsoFunctor
+import Control.Category
+import Control.Category.Reader
+import Control.SIArrow
 import Data.Syntax
 import Data.Syntax.Char
 import Data.Syntax.Combinator
-import Prelude hiding (takeWhile, take)
+import Prelude hiding (takeWhile, take, id, (.))
 
 -- | Adds indentation to a syntax description.
-newtype Indent m a = Indent { unIndent :: (Int, m ()) -> m a }
+newtype Indent cat a b = Indent { unIndent :: ReaderCT (Int, cat () ()) cat a b }
+    deriving (Category, Products, Coproducts, CategoryPlus, SIArrow)
 
-instance SemiIsoFunctor m => SemiIsoFunctor (Indent m) where
-    simap f (Indent g) = Indent $ \i -> simap f (g i)
+instance CategoryTrans Indent where
+    clift = Indent . clift
 
-instance SemiIsoApply m => SemiIsoApply (Indent m) where
-    sipure ai = Indent $ \_ -> sipure ai
-    Indent f /*/ Indent g = Indent $ \i -> f i /*/ g i
+instance Syntax syn => Syntax (Indent syn) where
+    type Seq (Indent syn) = Seq syn
+    anyChar = clift anyChar
+    char = clift . char
+    notChar = clift . notChar
+    satisfy = clift . satisfy
+    satisfyWith ai = clift . satisfyWith ai
+    string = clift . string
+    take = clift . take
+    takeWhile = clift . takeWhile
+    takeWhile1 = clift . takeWhile1
+    takeTill = clift . takeTill
+    takeTill1 = clift . takeTill1
 
-instance SemiIsoAlternative m => SemiIsoAlternative (Indent m) where
-    siempty = Indent $ \_ -> siempty
-    Indent f /|/ Indent g = Indent $ \i -> f i /|/ g i
-
-instance SemiIsoMonad m => SemiIsoMonad (Indent m) where
-    (Indent m) //= f = Indent $ \i -> m i //= (\x -> unIndent (f x) i)
-
-instance SemiIsoFix m => SemiIsoFix (Indent m) where
-    sifix f = Indent $ \i -> sifix $ \y -> unIndent (f y) i
-
-instance Syntax syn seq => Syntax (Indent syn) seq where
-    anyChar = Indent $ const anyChar
-    char = Indent . const . char
-    notChar = Indent . const . notChar
-    satisfy = Indent . const . satisfy
-    satisfyWith ai = Indent . const . satisfyWith ai
-    string = Indent . const . string
-    take = Indent . const . take
-    takeWhile = Indent . const . takeWhile
-    takeWhile1 = Indent . const . takeWhile1
-    takeTill = Indent . const . takeTill
-    takeTill1 = Indent . const . takeTill1
-
-instance SyntaxChar syn seq => SyntaxChar (Indent syn) seq where
-    decimal = Indent $ const decimal
-    scientific = Indent $ const scientific
+instance SyntaxChar syn => SyntaxChar (Indent syn) where
+    decimal = clift decimal
+    hexadecimal = clift hexadecimal
+    scientific = clift scientific
+    realFloat = clift realFloat
 
 -- | @runIndent m tab@ runs the 'Indent' transformer using @tab@ once for each
 -- level of indentation.
-runIndent :: Indent m a -> m () -> m a
-runIndent = ($ 0) . curry . unIndent
+runIndent :: Indent cat a b -> cat () () -> cat a b
+runIndent (Indent m) tab = runReaderCT m (0, tab)
 
 -- | Inserts a new line and correct indentation, but does not 
 -- require any formatting when parsing (it just skips all white space).
-breakLine :: SyntaxChar syn seq => Indent syn ()
-breakLine = Indent $ \(i, tab) -> opt (char '\n') /* opt (sireplicate_ i tab) /* spaces_
+breakLine :: SyntaxChar syn => Indent syn () ()
+breakLine = Indent . ReaderCT $ \(i, tab) -> 
+    opt (char '\n') /* opt (sireplicate_ i tab) /* spaces_
 
 -- | Increases the indentation level of its argument by one.
-indented :: Indent m a -> Indent m a
-indented (Indent f) = Indent $ \(i, tab) -> f (i + 1, tab)
+indented :: Indent cat a b -> Indent cat a b
+indented (Indent f) = Indent . ReaderCT $ \(i, tab) -> runReaderCT f (i + 1, tab)
