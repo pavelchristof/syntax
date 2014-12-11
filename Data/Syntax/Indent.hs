@@ -10,7 +10,7 @@ License     :  MIT
 Maintainer  :  Paweł Nowak <pawel834@gmail.com>
 Stability   :  experimental
 
-Provides a very simple indentation as a category transformer (a functor from Cat to Cat).
+Provides a very simple indentation as a category transformer.
 -}
 module Data.Syntax.Indent (
     Indent,
