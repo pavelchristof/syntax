@@ -25,6 +25,7 @@ module Data.Syntax.Char (
     digitHex
     ) where
 
+import Control.Category.Reader
 import Control.Lens.SemiIso
 import Control.SIArrow
 import Data.Bits
@@ -53,6 +54,12 @@ class (Syntax syn, Element (Seq syn) ~ Char) => SyntaxChar syn where
     scientific :: syn () Scientific
 
     {-# MINIMAL decimal, hexadecimal, realFloat, scientific #-}
+
+instance SyntaxChar syn => SyntaxChar (ReaderCT env syn) where
+    decimal = clift decimal
+    hexadecimal = clift hexadecimal
+    scientific = clift scientific
+    realFloat = clift realFloat
 
 -- | An useful synonym for SyntaxChars with Text sequences.
 type SyntaxText syn = (SyntaxChar syn, Seq syn ~ Text)

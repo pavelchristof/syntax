@@ -34,25 +34,27 @@ newtype Indent cat a b = Indent { unIndent :: ReaderCT (Int, cat () ()) cat a b 
 instance CategoryTrans Indent where
     clift = Indent . clift
 
+-- Generalized newtype deriving cannot derive this :(
+
 instance Syntax syn => Syntax (Indent syn) where
     type Seq (Indent syn) = Seq syn
-    anyChar = clift anyChar
-    char = clift . char
-    notChar = clift . notChar
-    satisfy = clift . satisfy
-    satisfyWith ai = clift . satisfyWith ai
-    string = clift . string
-    take = clift . take
-    takeWhile = clift . takeWhile
-    takeWhile1 = clift . takeWhile1
-    takeTill = clift . takeTill
-    takeTill1 = clift . takeTill1
+    anyChar = Indent anyChar
+    char = Indent . char
+    notChar = Indent . notChar
+    satisfy = Indent . satisfy
+    satisfyWith ai = Indent . satisfyWith ai
+    string = Indent . string
+    take = Indent . take
+    takeWhile = Indent . takeWhile
+    takeWhile1 = Indent . takeWhile1
+    takeTill = Indent . takeTill
+    takeTill1 = Indent . takeTill1
 
 instance SyntaxChar syn => SyntaxChar (Indent syn) where
-    decimal = clift decimal
-    hexadecimal = clift hexadecimal
-    scientific = clift scientific
-    realFloat = clift realFloat
+    decimal = Indent decimal
+    hexadecimal = Indent hexadecimal
+    scientific = Indent scientific
+    realFloat = Indent realFloat
 
 -- | @runIndent m tab@ runs the 'Indent' transformer using @tab@ once for each
 -- level of indentation.

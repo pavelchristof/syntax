@@ -21,6 +21,7 @@ module Data.Syntax (
 
 import Prelude hiding (take, takeWhile)
 
+import Control.Category.Reader
 import Control.Lens.Iso
 import Control.Lens.SemiIso
 import Control.SIArrow
@@ -70,7 +71,7 @@ class ( SIArrow syn
     satisfyWith ai p = bifiltered p . ai /$/ anyChar
 
     -- | A specific string.
-    string :: (Seq syn) -> syn () ()
+    string :: Seq syn -> syn () ()
     string s = rev (exact s) /$/ take (olength s)
 
     -- | A string of length @n@.
@@ -94,3 +95,17 @@ class ( SIArrow syn
     takeTill1 p = takeWhile1 (not . p)
 
     {-# MINIMAL anyChar #-}
+
+instance Syntax syn => Syntax (ReaderCT env syn) where
+    type Seq (ReaderCT env syn) = Seq syn
+    anyChar = clift anyChar
+    char = clift . char
+    notChar = clift . notChar
+    satisfy = clift . satisfy
+    satisfyWith ai = clift . satisfyWith ai
+    string = clift . string
+    take = clift . take
+    takeWhile = clift . takeWhile
+    takeWhile1 = clift . takeWhile1
+    takeTill = clift . takeTill
+    takeTill1 = clift . takeTill1
