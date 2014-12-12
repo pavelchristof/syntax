@@ -20,15 +20,17 @@ module Data.Syntax (
     packed
     ) where
 
-import Prelude hiding (take, takeWhile)
+import           Prelude hiding (take, takeWhile, id, (.))
 
-import Control.Category.Reader
-import Control.Category.Structures
-import Control.Lens.Iso
-import Control.Lens.SemiIso
-import Control.SIArrow
-import Data.MonoTraversable
-import Data.Sequences hiding (take, takeWhile)
+import           Control.Category
+import           Control.Category.Reader
+import           Control.Category.Structures
+import           Control.Lens.Iso
+import           Control.Lens.SemiIso
+import           Control.SIArrow
+import           Data.MonoTraversable
+import           Data.Sequences hiding (take, takeWhile, replicate)
+import           Data.Vector (Vector)
 
 -- | An isomorphism between a sequence and a list of its elements.
 packed :: IsSequence seq => Iso' seq [Element seq]
@@ -37,7 +39,7 @@ packed = iso otoList fromList
 -- | An abstract syntax description based on semi-isomorphisms.
 --
 -- This class can be implemented by both parsers and printers.
--- 
+--
 -- The usual use is to write a polymorphic syntax description and instantiate it
 -- both as a parser and a printer. Examples are available in 'syntax-example' and
 -- 'syntax-example-json' packages.
@@ -95,6 +97,32 @@ class ( SIArrow syn
     -- | Maximal non-empty string which elements do not satisfy a predicate.
     takeTill1 :: (Element (Seq syn) -> Bool) -> syn () (Seq syn)
     takeTill1 p = takeWhile1 (not . p)
+
+    -- | Constant size vector. The default implementation uses lists, but
+    -- "syntax-attoparsec" and "syntax-printer" override it with an efficient
+    -- implementation that works on a vector directly.
+    --
+    -- @vecN n e@ describes a size @n@ vector with elements @e@.
+    --
+    -- Also see 'Data.Syntax.Combinator.vec'.
+    vecN :: Int -> syn () a -> syn () (Vector a)
+    vecN n e = packed /$/ sireplicate n e
+
+    -- | Constant size vector with index-aware element. The default implementation
+    -- uses lists, but "syntax-attoparsec" and "syntax-printer" override it with an
+    -- efficient implementation that works on a vector directly.
+    --
+    -- @ivecN n e@ describes a size @n@ vector with elements @e@. Each element
+    -- gets its index and should output a value and the index unchanged.
+    --
+    -- Also see 'Data.Syntax.Combinator.ivec'.
+    ivecN :: Int -> syn Int (Int, a) -> syn () (Vector a)
+    ivecN n e = (packed /$/)
+              $ sisequence
+              $ map (\(i, e') -> constant i ^>> e'
+                                 >>> first (sipure (constant i))
+                                 >># unit . swapped)
+              $ zip [0 .. n-1] (replicate n e)
 
     {-# MINIMAL anyChar #-}
 
