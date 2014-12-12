@@ -5,8 +5,9 @@ description:
   "syntax" allows you to write a single syntax description and instantiate is both as a parser and a pretty printer.
   .
   Syntax descriptions are written in applicative or arrow style. The library uses a custom typeclass hierarchy, provided
-  by the "semi-iso" package. Most of the time you will be using operators like '/$/' and '/*/', just like parser combinators.
-  When more power is needed - e.g. when the syntax depends on the parsed or printed value - you turn to arrows.
+  by the "semi-iso" package. Most of the time you will be using operators like '/$/', '/*/' and '/+/' (= '<|>'), just
+  like parser combinators. When more power is needed - e.g. when the syntax depends on the parsed or printed value -
+  you turn to arrows.
   .
   Semi-isomorphisms from "semi-iso" are the basic building block of syntax descriptions. I recommend reading
   the hackage page of "semi-iso" first, as it contains much more information.
