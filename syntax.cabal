@@ -22,7 +22,7 @@ description:
   a reader category transformer that tracks current indentation level. I plan on implementing Haskell layout rule in the
   future.
   .
-  Note that the library can work with both text and binary data. Alas, there are no binary combinators implemented yet.
+  The library can work with both text and binary data. Alas, there are no binary combinators implemented yet.
   I will implement them when i have the time (but these category transformers look so much more interesting for now ;).
   .
   EXAMPLES! See @syntax-example@ and @syntax-example-json@ for examples.
