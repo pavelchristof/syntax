@@ -26,6 +26,9 @@ module Data.Syntax.Combinator
     sepBy,
     sepBy1,
 
+    -- * Arrowized combinators.
+    takeArr,
+
     -- * Vectors.
     vecNSepBy,
     ivecNSepBy,
@@ -48,10 +51,11 @@ import           Control.Category.Structures
 import           Control.Lens
 import           Control.Lens.SemiIso
 import           Control.SIArrow
+import qualified Data.MonoTraversable as Seq
 import           Data.Syntax
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
-import           Prelude hiding (id, (.))
+import           Prelude hiding (id, (.), take)
 
 -- | One or zero occurences of @f@.
 optional :: SIArrow cat => cat () a -> cat () (Maybe a)
@@ -88,6 +92,11 @@ sepBy v s = sepBy1 v s /+/ sipure _Empty
 -- | One or more occurences of @v@ separated by @s@.
 sepBy1 :: SIArrow cat => cat () a -> cat () () -> cat () [a]
 sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /+/ sipure _Empty)
+
+-- | A string of given length.
+takeArr :: Syntax syn => syn Int (Seq syn)
+takeArr = sibind $ iso (\n -> constant n #>> take n)
+                       (\s -> constant (Seq.olength s) #>> take (Seq.olength s))
 
 -- | Constant size vector with separators.
 --
