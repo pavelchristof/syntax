@@ -4,8 +4,8 @@ synopsis:            Reversible parsing and pretty-printing.
 description:
   "syntax" allows you to write a single syntax description and instantiate is both as a parser and a pretty printer.
   .
-  Syntax descriptions are written in applicative or arrow style. The library uses a custom hierarchy, provided by the
-  "semi-iso" package. Most of the time you will be using operators like '/$/' and '/*/', just like parser combinators.
+  Syntax descriptions are written in applicative or arrow style. The library uses a custom typeclass hierarchy, provided
+  by the "semi-iso" package. Most of the time you will be using operators like '/$/' and '/*/', just like parser combinators.
   When more power is needed - e.g. when the syntax depends on the parsed or printed value - you turn to arrows.
   .
   Semi-isomorphisms from "semi-iso" are the basic building block of syntax descriptions. I recommend reading
@@ -19,7 +19,7 @@ description:
   Advanced formatting and parsing (for example indentation, haskell layout rule) is implemented as category transformers
   (similar to monad transformers). Currently only simple indentation is implemented (in "Data.Syntax.Indent") - basically
   a reader category transformer that tracks current indentation level. I plan on implementing Haskell layout rule in the
-  future (as a reusable transformer).
+  future.
   .
   Note that the library can work with both text and binary data. There are no binary combinators implemented - yet.
   Alas, these are not only useful combinators missing! I will slowly but steadily implement them over time
