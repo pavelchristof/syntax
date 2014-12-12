@@ -32,7 +32,15 @@ module Data.Syntax.Combinator
     vec,
     vecSepBy,
     ivec,
-    ivecSepBy
+    ivecSepBy,
+
+    -- * Unboxed vectors.
+    uvecNSepBy,
+    uivecNSepBy,
+    uvec,
+    uvecSepBy,
+    uivec,
+    uivecSepBy
     ) where
 
 import           Control.Category
@@ -41,8 +49,8 @@ import           Control.Lens
 import           Control.Lens.SemiIso
 import           Control.SIArrow
 import           Data.Syntax
-import           Data.Vector (Vector)
 import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as VU
 import           Prelude hiding (id, (.))
 
 -- | One or zero occurences of @f@.
@@ -84,14 +92,14 @@ sepBy1 v s = _Cons /$/ v /*/ (s */ sepBy1 v s /+/ sipure _Empty)
 -- | Constant size vector with separators.
 --
 -- @vecNSepBy n e sep@ describes a size @n@ vector with elements @e@ separated by @sep@.
-vecNSepBy :: Syntax syn => Int -> syn () a -> syn () () -> syn () (Vector a)
+vecNSepBy :: Syntax syn => Int -> syn () a -> syn () () -> syn () (V.Vector a)
 vecNSepBy n e sep = ivecNSepBy n (unit ^>> second e) sep
 
 -- | Constant size vector with separators and index-aware elements.
 --
 -- @ivecNSepBy n e sep@ describes a size @n@ vector with elements @e@ separated by @sep@.
 -- Each element gets its index and should output a value and the index unchanged.
-ivecNSepBy :: Syntax syn => Int -> syn Int (Int, a) -> syn () () -> syn () (Vector a)
+ivecNSepBy :: Syntax syn => Int -> syn Int (Int, a) -> syn () () -> syn () (V.Vector a)
 ivecNSepBy n e sep = ivecN n $ sibind $ iso el (el . fst)
   where
     el k | k < n - 1 = unit ^>> e *** sep >># unit
@@ -100,27 +108,74 @@ ivecNSepBy n e sep = ivecN n $ sibind $ iso el (el . fst)
 -- | Runtime sized vector. The size can depend on the result of some computation.
 --
 -- @vec e@ describes a vector with elements @e@.
-vec :: Syntax syn => syn () a -> syn Int (Vector a)
+vec :: Syntax syn => syn () a -> syn Int (V.Vector a)
 vec e = vecSepBy e (siarr id)
 
 -- | Runtime sized vector with separators. The size can depend on the result of some
 -- computation.
 --
 -- @vecSepBy e sep@ describes a vector with elements @e@ separated by @sep@.
-vecSepBy :: Syntax syn => syn () a -> syn () () -> syn Int (Vector a)
+vecSepBy :: Syntax syn => syn () a -> syn () () -> syn Int (V.Vector a)
 vecSepBy e sep = ivecSepBy (unit ^>> second e) sep
 
 -- | Runtime sized vector with index-aware elements. The size can depend on the result
 -- of some computation.
 --
 -- @ivec e@ describes a vector with elements @e@.
-ivec :: Syntax syn => syn Int (Int, a) -> syn Int (Vector a)
+ivec :: Syntax syn => syn Int (Int, a) -> syn Int (V.Vector a)
 ivec e = ivecSepBy e (siarr id)
 
 -- | Runtime sized vector with index-aware elements and separators. The size can depend
 -- on the result of some computation.
 --
 -- @ivecSepBy e sep@ describes a vector with elements @e@ separated by @sep@.
-ivecSepBy :: Syntax syn => syn Int (Int, a) -> syn () () -> syn Int (Vector a)
+ivecSepBy :: Syntax syn => syn Int (Int, a) -> syn () () -> syn Int (V.Vector a)
 ivecSepBy e sep = sibind $ iso (\n -> constant n #>> ivecNSepBy n e sep)
                                (\v -> constant (V.length v) #>> ivecNSepBy (V.length v) e sep)
+
+-- | Constant size unboxed vector with separators.
+--
+-- @uvecNSepBy n e sep@ describes a size @n@ vector with elements @e@ separated by @sep@.
+uvecNSepBy :: (Syntax syn, VU.Unbox a) => Int -> syn () a -> syn () () -> syn () (VU.Vector a)
+uvecNSepBy n e sep = uivecNSepBy n (unit ^>> second e) sep
+
+-- | Constant size unboxed vector with separators and index-aware elements.
+--
+-- @uivecNSepBy n e sep@ describes a size @n@ vector with elements @e@ separated by @sep@.
+-- Each element gets its index and should output a value and the index unchanged.
+uivecNSepBy :: (Syntax syn, VU.Unbox a) => Int -> syn Int (Int, a)
+            -> syn () () -> syn () (VU.Vector a)
+uivecNSepBy n e sep = uivecN n $ sibind $ iso el (el . fst)
+  where
+    el k | k < n - 1 = unit ^>> e *** sep >># unit
+         | otherwise = e
+
+-- | Runtime sized unboxed vector. The size can depend on the result of some computation.
+--
+-- @uvec e@ describes a vector with elements @e@.
+uvec :: (Syntax syn, VU.Unbox a) => syn () a -> syn Int (VU.Vector a)
+uvec e = uvecSepBy e (siarr id)
+
+-- | Runtime sized unboxed vector with separators. The size can depend on the result of some
+-- computation.
+--
+-- @uvecSepBy e sep@ describes a vector with elements @e@ separated by @sep@.
+uvecSepBy :: (Syntax syn, VU.Unbox a) => syn () a -> syn () () -> syn Int (VU.Vector a)
+uvecSepBy e sep = uivecSepBy (unit ^>> second e) sep
+
+-- | Runtime sized unboxed vector with index-aware elements. The size can depend on the result
+-- of some computation.
+--
+-- @uivec e@ describes a vector with elements @e@.
+uivec :: (Syntax syn, VU.Unbox a) => syn Int (Int, a) -> syn Int (VU.Vector a)
+uivec e = uivecSepBy e (siarr id)
+
+-- | Runtime sized unboxed vector with index-aware elements and separators. The size can depend
+-- on the result of some computation.
+--
+-- @uivecSepBy e sep@ describes a vector with elements @e@ separated by @sep@.
+uivecSepBy :: (Syntax syn, VU.Unbox a) => syn Int (Int, a)
+           -> syn () () -> syn Int (VU.Vector a)
+uivecSepBy e sep = sibind $ iso (\n -> constant n #>> uivecNSepBy n e sep)
+                                (\v -> constant (VU.length v)
+                                       #>> uivecNSepBy (VU.length v) e sep)

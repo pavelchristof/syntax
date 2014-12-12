@@ -30,7 +30,8 @@ import           Control.Lens.SemiIso
 import           Control.SIArrow
 import           Data.MonoTraversable
 import           Data.Sequences hiding (take, takeWhile, replicate)
-import           Data.Vector (Vector)
+import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as VU
 
 -- | An isomorphism between a sequence and a list of its elements.
 packed :: IsSequence seq => Iso' seq [Element seq]
@@ -105,7 +106,7 @@ class ( SIArrow syn
     -- @vecN n e@ describes a size @n@ vector with elements @e@.
     --
     -- Also see 'Data.Syntax.Combinator.vec'.
-    vecN :: Int -> syn () a -> syn () (Vector a)
+    vecN :: Int -> syn () a -> syn () (V.Vector a)
     vecN n e = packed /$/ sireplicate n e
 
     -- | Constant size vector with index-aware element. The default implementation
@@ -116,13 +117,39 @@ class ( SIArrow syn
     -- gets its index and should output a value and the index unchanged.
     --
     -- Also see 'Data.Syntax.Combinator.ivec'.
-    ivecN :: Int -> syn Int (Int, a) -> syn () (Vector a)
+    ivecN :: Int -> syn Int (Int, a) -> syn () (V.Vector a)
     ivecN n e = (packed /$/)
               $ sisequence
               $ map (\(i, e') -> constant i ^>> e'
                                  >>> first (sipure (constant i))
                                  >># unit . swapped)
               $ zip [0 .. n-1] (replicate n e)
+
+    -- | Constant size unboxed vector. The default implementation uses lists, but
+    -- "syntax-attoparsec" and "syntax-printer" override it with an efficient
+    -- implementation that works on a vector directly.
+    --
+    -- @vecN n e@ describes a size @n@ vector with elements @e@.
+    --
+    -- Also see 'Data.Syntax.Combinator.vec'.
+    uvecN :: VU.Unbox a => Int -> syn () a -> syn () (VU.Vector a)
+    uvecN n e = packed /$/ sireplicate n e
+
+    -- | Constant size unboxed vector with index-aware element. The default implementation
+    -- uses lists, but "syntax-attoparsec" and "syntax-printer" override it with an
+    -- efficient implementation that works on a vector directly.
+    --
+    -- @ivecN n e@ describes a size @n@ vector with elements @e@. Each element
+    -- gets its index and should output a value and the index unchanged.
+    --
+    -- Also see 'Data.Syntax.Combinator.ivec'.
+    uivecN :: VU.Unbox a => Int -> syn Int (Int, a) -> syn () (VU.Vector a)
+    uivecN n e = (packed /$/)
+               $ sisequence
+               $ map (\(i, e') -> constant i ^>> e'
+                                  >>> first (sipure (constant i))
+                                  >># unit . swapped)
+               $ zip [0 .. n-1] (replicate n e)
 
     {-# MINIMAL anyChar #-}
 
