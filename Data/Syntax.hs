@@ -166,6 +166,10 @@ instance Syntax syn => Syntax (ReaderCT env syn) where
     takeWhile1 = clift . takeWhile1
     takeTill = clift . takeTill
     takeTill1 = clift . takeTill1
+    vecN n e = ReaderCT $ vecN n . runReaderCT e
+    ivecN n e = ReaderCT $ ivecN n . runReaderCT e
+    uvecN n e = ReaderCT $ uvecN n . runReaderCT e
+    uivecN n e = ReaderCT $ uivecN n . runReaderCT e
 
 -- | Execute a computation in an isolated context.
 --
